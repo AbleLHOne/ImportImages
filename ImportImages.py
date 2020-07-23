@@ -3,13 +3,14 @@ from pathlib import Path
 import datetime
 import shutil
 import json
+import re
 
 base_path = ''
 movePath = 'Assets.xcassets/'
 nowtime = ''
 newFilePath = ''
 
-
+ 
 def timestamp2datetime(timestamp, convert_to_local=True, utc=8, is_remove_ms=True):
     if is_remove_ms:
         timestamp = int(timestamp)
@@ -35,6 +36,10 @@ if __name__ == "__main__":
 
     while len(base_path) <= 0:
         base_path = input("输入你资源路径:")
+        # 判断路径是否存在
+        if not os.path.exists(base_path):
+            print('资源路径不存在 请重新输入！')
+            base_path = ''
     while len(nowtime) <= 0:
         nowtime = input("输入要更新的时间 2020-0X-XX格式:")
     while len(newFilePath) <= 0:
@@ -60,7 +65,11 @@ if __name__ == "__main__":
     for entry in pathAry.iterdir():
         if entry.is_file():
             info = entry.stat()
-
+            # 判断资源是否是图片类型不是图片类型丢弃
+            pattern = re.compile(r"(.jpg|.png|.jpeg)$", re.I)
+            m = pattern.match(entry.suffix)
+            if not m:
+                continue
             fileTime = convert_date(info.st_mtime)
             isBig = compare_time(nowtime, fileTime)
             if not isBig:
@@ -113,7 +122,7 @@ if __name__ == "__main__":
 
     if isCover == 'z':
         for entry in newPathAry.iterdir():
-        
+
             if not os.path.exists(movePath + newFilePath + '/' + entry.name):
                 shutil.move(newFilePath + '/' + entry.name, movePath + newFilePath)
 
